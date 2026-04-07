@@ -227,7 +227,7 @@ const Sales = () => {
       query = query.gte('created_at', startIso).lte('created_at', endIso);
     }
 
-    const { data, error } = await query.limit(100);
+    const { data, error } = await query.limit(500);
 
     if (error) {
       toast({ title: 'Error', description: 'Failed to fetch sales', variant: 'destructive' });

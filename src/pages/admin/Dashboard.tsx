@@ -78,6 +78,7 @@ const Dashboard = () => {
         supabase.from('inquiries').select('id, status'),
         supabase.from('customers').select('id'),
         supabase.from('sales').select('id, total, payment_method, created_at')
+          .is('deleted_at', null)
           .gte('created_at', startOfDay.toISOString())
           .lte('created_at', endOfDay.toISOString()),
         supabase.from('expenses')
