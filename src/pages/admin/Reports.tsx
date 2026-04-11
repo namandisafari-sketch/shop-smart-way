@@ -87,6 +87,11 @@ const Reports = () => {
     const startStr = format(startDate, 'yyyy-MM-dd');
     const endStr = format(endDate, 'yyyy-MM-dd');
 
+    // Convert date range to UTC with Uganda timezone offset (UTC+3)
+    // This ensures sales at midnight Uganda time (9pm UTC previous day) are correctly included
+    const startUTC = startStr + 'T00:00:00+03:00';
+    const endUTC = endStr + 'T23:59:59+03:00';
+
     try {
       // Fetch sales with sale_items for COGS calculation - exclude deleted and credit sales
       const { data: salesData } = await supabase
@@ -94,8 +99,8 @@ const Reports = () => {
         .select('id, total, created_at, payment_method')
         .is('deleted_at', null)
         .neq('payment_method', 'credit')
-        .gte('created_at', startStr)
-        .lte('created_at', endStr + 'T23:59:59');
+        .gte('created_at', startUTC)
+        .lte('created_at', endUTC);
 
       const cashCardSales = salesData?.reduce((sum, s) => sum + Number(s.total), 0) || 0;
       const saleIds = salesData?.map(s => s.id) || [];
