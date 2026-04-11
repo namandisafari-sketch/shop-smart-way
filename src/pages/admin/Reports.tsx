@@ -138,8 +138,8 @@ const Reports = () => {
       const { data: creditPaymentsData } = await supabase
         .from('credit_payments')
         .select('amount, payment_date, credit_sale_id')
-        .gte('payment_date', startStr)
-        .lte('payment_date', endStr + 'T23:59:59');
+        .gte('payment_date', startUTC)
+        .lte('payment_date', endUTC);
 
       const creditPaymentsRevenue = creditPaymentsData?.reduce((sum, p) => sum + Number(p.amount), 0) || 0;
 
@@ -201,8 +201,8 @@ const Reports = () => {
         .from('refunds')
         .select('amount, created_at')
         .is('deleted_at', null)
-        .gte('created_at', startStr)
-        .lte('created_at', endStr + 'T23:59:59');
+        .gte('created_at', startUTC)
+        .lte('created_at', endUTC);
 
       const totalRefunds = refundsData?.reduce((sum, r) => sum + Number(r.amount), 0) || 0;
 
