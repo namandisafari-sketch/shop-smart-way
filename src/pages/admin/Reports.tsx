@@ -45,7 +45,7 @@ const isWithinUgandaDateRange = (timestamp: string, startStr: string, endStr: st
 };
 
 async function fetchAllPages<T>(
-  fetchPage: (from: number, to: number) => Promise<{ data: T[] | null; error: any }>,
+  fetchPage: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: unknown }>,
 ) {
   const rows: T[] = [];
   let from = 0;
