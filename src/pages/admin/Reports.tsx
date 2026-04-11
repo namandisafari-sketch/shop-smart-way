@@ -506,7 +506,7 @@ const Reports = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Financial Reports</h1>
-          <p className="text-muted-foreground">Balance sheets, income statements, and financial analysis</p>
+          <p className="text-muted-foreground">Balance sheets, income statements, and financial analysis </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <Select value={period} onValueChange={setPeriod}>
