@@ -9,7 +9,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { supabase } from '@/integrations/supabase/client';
 import { FileText, TrendingUp, TrendingDown, DollarSign, Calendar as CalendarIcon, Download, Package } from 'lucide-react';
 import { formatCurrency } from '@/lib/currency';
-import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns';
+import { format, startOfMonth, endOfMonth, subMonths, addDays, subDays } from 'date-fns';
+import { getUgandaDateString } from '@/lib/utils';
 
 interface FinancialData {
   revenue: number;
@@ -29,6 +30,43 @@ interface MonthlyData {
   grossProfit: number;
   expenses: number;
   netProfit: number;
+}
+
+const REPORT_QUERY_PAGE_SIZE = 1000;
+
+const getTimestampFetchWindow = (startDate: Date, endDate: Date) => ({
+  start: `${format(subDays(startDate, 1), 'yyyy-MM-dd')}T00:00:00Z`,
+  end: `${format(addDays(endDate, 1), 'yyyy-MM-dd')}T23:59:59Z`,
+});
+
+const isWithinUgandaDateRange = (timestamp: string, startStr: string, endStr: string) => {
+  const ugandaDate = getUgandaDateString(new Date(timestamp));
+  return ugandaDate >= startStr && ugandaDate <= endStr;
+};
+
+async function fetchAllPages<T>(
+  fetchPage: (from: number, to: number) => Promise<{ data: T[] | null; error: any }>,
+) {
+  const rows: T[] = [];
+  let from = 0;
+
+  while (true) {
+    const to = from + REPORT_QUERY_PAGE_SIZE - 1;
+    const { data, error } = await fetchPage(from, to);
+
+    if (error) throw error;
+    if (!data?.length) break;
+
+    rows.push(...data);
+
+    if (data.length < REPORT_QUERY_PAGE_SIZE) {
+      break;
+    }
+
+    from += REPORT_QUERY_PAGE_SIZE;
+  }
+
+  return rows;
 }
 
 const Reports = () => {
@@ -86,21 +124,23 @@ const Reports = () => {
     const { startDate, endDate } = getDateRange();
     const startStr = format(startDate, 'yyyy-MM-dd');
     const endStr = format(endDate, 'yyyy-MM-dd');
-
-    // Convert date range to UTC with Uganda timezone offset (UTC+3)
-    // This ensures sales at midnight Uganda time (9pm UTC previous day) are correctly included
-    const startUTC = startStr + 'T00:00:00+03:00';
-    const endUTC = endStr + 'T23:59:59+03:00';
+    const { start: fetchStartUTC, end: fetchEndUTC } = getTimestampFetchWindow(startDate, endDate);
 
     try {
       // Fetch sales with sale_items for COGS calculation - exclude deleted and credit sales
-      const { data: salesData } = await supabase
-        .from('sales')
-        .select('id, total, created_at, payment_method')
-        .is('deleted_at', null)
-        .neq('payment_method', 'credit')
-        .gte('created_at', startUTC)
-        .lte('created_at', endUTC);
+      const salesData = (
+        await fetchAllPages<any>((from, to) =>
+          supabase
+            .from('sales')
+            .select('id, total, created_at, payment_method')
+            .is('deleted_at', null)
+            .neq('payment_method', 'credit')
+            .gte('created_at', fetchStartUTC)
+            .lte('created_at', fetchEndUTC)
+            .order('created_at', { ascending: true })
+            .range(from, to),
+        )
+      ).filter((sale) => isWithinUgandaDateRange(sale.created_at, startStr, endStr));
 
       const cashCardSales = salesData?.reduce((sum, s) => sum + Number(s.total), 0) || 0;
       const saleIds = salesData?.map(s => s.id) || [];
@@ -135,11 +175,17 @@ const Reports = () => {
       }
 
       // Fetch credit payments - these count as revenue when payment is made
-      const { data: creditPaymentsData } = await supabase
-        .from('credit_payments')
-        .select('amount, payment_date, credit_sale_id')
-        .gte('payment_date', startUTC)
-        .lte('payment_date', endUTC);
+      const creditPaymentsData = (
+        await fetchAllPages<any>((from, to) =>
+          supabase
+            .from('credit_payments')
+            .select('amount, payment_date, credit_sale_id')
+            .gte('payment_date', fetchStartUTC)
+            .lte('payment_date', fetchEndUTC)
+            .order('payment_date', { ascending: true })
+            .range(from, to),
+        )
+      ).filter((payment) => isWithinUgandaDateRange(payment.payment_date, startStr, endStr));
 
       const creditPaymentsRevenue = creditPaymentsData?.reduce((sum, p) => sum + Number(p.amount), 0) || 0;
 
@@ -197,12 +243,18 @@ const Reports = () => {
       const totalRevenue = cashCardSales + creditPaymentsRevenue;
 
       // Fetch refunds - exclude deleted
-      const { data: refundsData } = await supabase
-        .from('refunds')
-        .select('amount, created_at')
-        .is('deleted_at', null)
-        .gte('created_at', startUTC)
-        .lte('created_at', endUTC);
+      const refundsData = (
+        await fetchAllPages<any>((from, to) =>
+          supabase
+            .from('refunds')
+            .select('amount, created_at')
+            .is('deleted_at', null)
+            .gte('created_at', fetchStartUTC)
+            .lte('created_at', fetchEndUTC)
+            .order('created_at', { ascending: true })
+            .range(from, to),
+        )
+      ).filter((refund) => isWithinUgandaDateRange(refund.created_at, startStr, endStr));
 
       const totalRefunds = refundsData?.reduce((sum, r) => sum + Number(r.amount), 0) || 0;
 
@@ -289,17 +341,22 @@ const Reports = () => {
         const monthEnd = endOfMonth(subMonths(new Date(), i));
         const monthStartStr = format(monthStart, 'yyyy-MM-dd');
         const monthEndStr = format(monthEnd, 'yyyy-MM-dd');
-        const monthStartUTC = monthStartStr + 'T00:00:00+03:00';
-        const monthEndUTC = monthEndStr + 'T23:59:59+03:00';
+        const { start: monthFetchStartUTC, end: monthFetchEndUTC } = getTimestampFetchWindow(monthStart, monthEnd);
 
         // Get sales for the month
-        const { data: mSales } = await supabase
-          .from('sales')
-          .select('id, total')
-          .is('deleted_at', null)
-          .neq('payment_method', 'credit')
-          .gte('created_at', monthStartUTC)
-          .lte('created_at', monthEndUTC);
+        const mSales = (
+          await fetchAllPages<any>((from, to) =>
+            supabase
+              .from('sales')
+              .select('id, total, created_at')
+              .is('deleted_at', null)
+              .neq('payment_method', 'credit')
+              .gte('created_at', monthFetchStartUTC)
+              .lte('created_at', monthFetchEndUTC)
+              .order('created_at', { ascending: true })
+              .range(from, to),
+          )
+        ).filter((sale) => isWithinUgandaDateRange(sale.created_at, monthStartStr, monthEndStr));
 
         const cashCardSales = mSales?.reduce((sum, s) => sum + Number(s.total), 0) || 0;
         const monthSaleIds = mSales?.map(s => s.id) || [];
@@ -333,11 +390,17 @@ const Reports = () => {
         }
 
         // Credit payments for the month
-        const { data: mCreditPayments } = await supabase
-          .from('credit_payments')
-          .select('amount, credit_sale_id')
-          .gte('payment_date', monthStartUTC)
-          .lte('payment_date', monthEndUTC);
+        const mCreditPayments = (
+          await fetchAllPages<any>((from, to) =>
+            supabase
+              .from('credit_payments')
+              .select('amount, credit_sale_id, payment_date')
+              .gte('payment_date', monthFetchStartUTC)
+              .lte('payment_date', monthFetchEndUTC)
+              .order('payment_date', { ascending: true })
+              .range(from, to),
+          )
+        ).filter((payment) => isWithinUgandaDateRange(payment.payment_date, monthStartStr, monthEndStr));
 
         const creditPayments = mCreditPayments?.reduce((sum, p) => sum + Number(p.amount), 0) || 0;
 
@@ -381,12 +444,19 @@ const Reports = () => {
         }
 
         // Refunds for the month
-        const { data: mRefunds } = await supabase
-          .from('refunds')
-          .select('amount')
-          .is('deleted_at', null)
-          .gte('created_at', monthStartUTC)
-          .lte('created_at', monthEndUTC);
+        const mRefunds = (
+          await fetchAllPages<any>((from, to) =>
+            supabase
+              .from('refunds')
+              .select('amount, created_at')
+              .is('deleted_at', null)
+              .gte('created_at', monthFetchStartUTC)
+              .lte('created_at', monthFetchEndUTC)
+              .order('created_at', { ascending: true })
+              .range(from, to),
+          )
+        ).filter((refund) => isWithinUgandaDateRange(refund.created_at, monthStartStr, monthEndStr));
+
         const monthRefunds = mRefunds?.reduce((sum, r) => sum + Number(r.amount), 0) || 0;
 
         // Exchange refunds for the month
