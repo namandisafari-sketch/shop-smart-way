@@ -289,6 +289,8 @@ const Reports = () => {
         const monthEnd = endOfMonth(subMonths(new Date(), i));
         const monthStartStr = format(monthStart, 'yyyy-MM-dd');
         const monthEndStr = format(monthEnd, 'yyyy-MM-dd');
+        const monthStartUTC = monthStartStr + 'T00:00:00+03:00';
+        const monthEndUTC = monthEndStr + 'T23:59:59+03:00';
 
         // Get sales for the month
         const { data: mSales } = await supabase
@@ -296,8 +298,8 @@ const Reports = () => {
           .select('id, total')
           .is('deleted_at', null)
           .neq('payment_method', 'credit')
-          .gte('created_at', monthStartStr)
-          .lte('created_at', monthEndStr + 'T23:59:59');
+          .gte('created_at', monthStartUTC)
+          .lte('created_at', monthEndUTC);
 
         const cashCardSales = mSales?.reduce((sum, s) => sum + Number(s.total), 0) || 0;
         const monthSaleIds = mSales?.map(s => s.id) || [];
@@ -334,8 +336,8 @@ const Reports = () => {
         const { data: mCreditPayments } = await supabase
           .from('credit_payments')
           .select('amount, credit_sale_id')
-          .gte('payment_date', monthStartStr)
-          .lte('payment_date', monthEndStr + 'T23:59:59');
+          .gte('payment_date', monthStartUTC)
+          .lte('payment_date', monthEndUTC);
 
         const creditPayments = mCreditPayments?.reduce((sum, p) => sum + Number(p.amount), 0) || 0;
 
@@ -383,8 +385,8 @@ const Reports = () => {
           .from('refunds')
           .select('amount')
           .is('deleted_at', null)
-          .gte('created_at', monthStartStr)
-          .lte('created_at', monthEndStr + 'T23:59:59');
+          .gte('created_at', monthStartUTC)
+          .lte('created_at', monthEndUTC);
         const monthRefunds = mRefunds?.reduce((sum, r) => sum + Number(r.amount), 0) || 0;
 
         // Exchange refunds for the month
