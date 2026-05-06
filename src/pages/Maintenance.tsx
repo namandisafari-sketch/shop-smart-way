@@ -1,4 +1,4 @@
-import { Database, ShieldCheck, Clock, Mail, Phone, Server, Lock } from "lucide-react";
+import { Database, ShieldCheck, Clock, Globe, Phone, Server, Lock, MapPin } from "lucide-react";
 
 const Maintenance = () => {
   return (
