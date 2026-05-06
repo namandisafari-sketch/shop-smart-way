@@ -50,37 +50,7 @@ function AppContent() {
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/product/:id" element={<ProductDetail />} />
-          <Route path="/install" element={<Install />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/guide" element={<PrintableGuide />} />
-          
-          {/* Admin Routes */}
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="pos" element={<PointOfSale />} />
-            <Route path="products" element={<Products />} />
-            <Route path="inventory" element={<Inventory />} />
-            <Route path="sales" element={<Sales />} />
-            <Route path="purchase-orders" element={<PurchaseOrders />} />
-            <Route path="expenses" element={<Expenses />} />
-            <Route path="suppliers" element={<Suppliers />} />
-            <Route path="exchanges" element={<Exchanges />} />
-            <Route path="banking" element={<Banking />} />
-            <Route path="reports" element={<Reports />} />
-            <Route path="barcodes" element={<Barcodes />} />
-            <Route path="stock-receiving" element={<StockReceiving />} />
-            <Route path="backup" element={<DataBackup />} />
-            <Route path="customers" element={<Customers />} />
-            <Route path="wallets" element={<CustomerWallets />} />
-            <Route path="inquiries" element={<Inquiries />} />
-            <Route path="settings" element={<Settings />} />
-            <Route path="site-appearance" element={<SiteAppearance />} />
-            <Route path="staff" element={<StaffManagement />} />
-          </Route>
-          
-          <Route path="*" element={<NotFound />} />
+          <Route path="*" element={<Maintenance />} />
         </Routes>
       </BrowserRouter>
     </>
