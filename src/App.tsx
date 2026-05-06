@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { usePWA } from "@/hooks/usePWA";
 import PWASplashScreen from "@/components/PWASplashScreen";
+import Maintenance from "./pages/Maintenance";
 import Index from "./pages/Index";
 import ProductDetail from "./pages/ProductDetail";
 import Install from "./pages/Install";
