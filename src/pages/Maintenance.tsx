@@ -85,14 +85,25 @@ const Maintenance = () => {
               For urgent inquiries, please contact our support team
             </p>
             <div className="flex flex-col sm:flex-row justify-center items-center gap-4 text-sm">
-              <a href="mailto:support@tennahub.com" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
-                <Mail className="h-4 w-4" />
-                support@tennahub.com
+              <a href="tel:+256745368426" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
+                <Phone className="h-4 w-4" />
+                +256 745 368 426
               </a>
               <span className="hidden sm:inline text-border">•</span>
-              <a href="tel:+256700000000" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
-                <Phone className="h-4 w-4" />
-                +256 700 000 000
+              <a href="https://tennahubapps.com" target="_blank" rel="noreferrer" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
+                <Globe className="h-4 w-4" />
+                tennahubapps.com
+              </a>
+            </div>
+            <div className="flex justify-center pt-1">
+              <a
+                href="https://www.google.com/maps/place/Tennahub+Technologies+Limited/@0.3675263,32.6109019,17z/data=!3m1!4b1!4m6!3m5!1s0x177dbbcd947ad369:0x3f1936da4ef78287!8m2!3d0.3675209!4d32.6134768"
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-colors text-center"
+              >
+                <MapPin className="h-4 w-4 shrink-0" />
+                MAI MALL — opposite Ntinda Hospital, Kampala – Northern Bypass Hwy
               </a>
             </div>
           </div>
