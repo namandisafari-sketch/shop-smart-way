@@ -52,7 +52,7 @@ const navItems = [
   { path: '/admin/banking', icon: Building2, label: 'Banking' },
   { path: '/admin/reports', icon: FileText, label: 'Reports' },
   { path: '/admin/customers', icon: Users, label: 'Customers' },
-  { path: '/admin/wallets', icon: CreditCard, label: 'Customer Wallets' },
+  { path: '/admin/customer-wallets', icon: CreditCard, label: 'Customer Wallets' },
   { path: '/admin/inquiries', icon: MessageSquare, label: 'Inquiries' },
   { path: '/admin/settings', icon: Settings, label: 'Settings' },
 ];
