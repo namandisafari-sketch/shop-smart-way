@@ -50,7 +50,34 @@ function AppContent() {
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="*" element={<Maintenance />} />
+          <Route path="/" element={<Index />} />
+          <Route path="/product/:id" element={<ProductDetail />} />
+          <Route path="/install" element={<Install />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/guide" element={<PrintableGuide />} />
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="products" element={<Products />} />
+            <Route path="inquiries" element={<Inquiries />} />
+            <Route path="customers" element={<Customers />} />
+            <Route path="customer-wallets" element={<CustomerWallets />} />
+            <Route path="settings" element={<Settings />} />
+            <Route path="pos" element={<PointOfSale />} />
+            <Route path="inventory" element={<Inventory />} />
+            <Route path="sales" element={<Sales />} />
+            <Route path="expenses" element={<Expenses />} />
+            <Route path="suppliers" element={<Suppliers />} />
+            <Route path="exchanges" element={<Exchanges />} />
+            <Route path="banking" element={<Banking />} />
+            <Route path="purchase-orders" element={<PurchaseOrders />} />
+            <Route path="reports" element={<Reports />} />
+            <Route path="barcodes" element={<Barcodes />} />
+            <Route path="stock-receiving" element={<StockReceiving />} />
+            <Route path="data-backup" element={<DataBackup />} />
+            <Route path="staff" element={<StaffManagement />} />
+            <Route path="site-appearance" element={<SiteAppearance />} />
+          </Route>
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </>
